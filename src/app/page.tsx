@@ -2,6 +2,7 @@
 
 import CaptionOptimizer from "@/components/analysis/CaptionOptimizer";
 import CompetitorComparison from "@/components/analysis/CompetitorComparison";
+import ExportReport from "@/components/analysis/ExportReport";
 import HookAnalysis from "@/components/analysis/HookAnalysis";
 import Recommendations from "@/components/analysis/Recommendations";
 import ScoreBreakdown from "@/components/analysis/ScoreBreakdown";
@@ -86,9 +87,26 @@ export default function Home() {
               {/* Feature pills */}
               <div className="flex flex-wrap justify-center gap-3 mt-8">
                 {[
-                  { icon: Zap, label: "Hook Analysis", desc: "First 3 seconds", color: "text-yellow-400 bg-yellow-500/10 border-yellow-500/20" },
-                  { icon: BarChart3, label: "8 Metrics", desc: "Scored 0-100", color: "text-blue-400 bg-blue-500/10 border-blue-500/20" },
-                  { icon: TrendingUp, label: "Trend Match", desc: "Real-time", color: "text-green-400 bg-green-500/10 border-green-500/20" },
+                  {
+                    icon: Zap,
+                    label: "Hook Analysis",
+                    desc: "First 3 seconds",
+                    color:
+                      "text-yellow-400 bg-yellow-500/10 border-yellow-500/20",
+                  },
+                  {
+                    icon: BarChart3,
+                    label: "8 Metrics",
+                    desc: "Scored 0-100",
+                    color: "text-blue-400 bg-blue-500/10 border-blue-500/20",
+                  },
+                  {
+                    icon: TrendingUp,
+                    label: "Trend Match",
+                    desc: "Real-time",
+                    color:
+                      "text-green-400 bg-green-500/10 border-green-500/20",
+                  },
                 ].map(({ icon: Icon, label, desc, color }) => (
                   <div
                     key={label}
@@ -119,7 +137,8 @@ export default function Home() {
                       View Past Analyses
                     </p>
                     <p className="text-xs text-gray-500">
-                      {history.length} previous {history.length === 1 ? "analysis" : "analyses"}
+                      {history.length} previous{" "}
+                      {history.length === 1 ? "analysis" : "analyses"}
                     </p>
                   </div>
                 </div>
@@ -232,7 +251,8 @@ export default function Home() {
 
         {/* ============ RESULTS STATE ============ */}
         {state.status === "complete" && state.result && (
-          <div>
+          <div id="results-container">
+            {/* Score Header */}
             <div className="text-center mb-14 pt-4">
               <p className="text-sm text-gray-500 mb-2 uppercase tracking-widest font-medium">
                 Analysis Complete
@@ -243,6 +263,7 @@ export default function Home() {
               <ViralityScore score={state.result.overallScore} />
             </div>
 
+            {/* Results Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-6">
                 <ScoreBreakdown breakdown={state.result.breakdown} />
@@ -256,11 +277,20 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Full Width Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
               <TrendingRecommendations data={state.result.trendingData} />
               <CompetitorComparison
                 comparison={state.result.competitorComparison}
                 userScore={state.result.overallScore}
+              />
+            </div>
+
+            {/* Export & Share */}
+            <div className="mt-10">
+              <ExportReport
+                score={state.result.overallScore}
+                platform={platform}
               />
             </div>
 
