@@ -13,8 +13,18 @@ import AnimatedBackground from "@/components/ui/AnimatedBackground";
 import LoadingAnalysis from "@/components/ui/LoadingAnalysis";
 import UploadZone from "@/components/upload/UploadZone";
 import { useAnalysis } from "@/hooks/useAnalysis";
+import { useHistory } from "@/hooks/useHistory";
 import { ContentType, Platform } from "@/types";
-import { ArrowRight, BarChart3, Sparkles, Star, TrendingUp, Zap } from "lucide-react";
+import {
+    ArrowRight,
+    BarChart3,
+    Clock,
+    Sparkles,
+    Star,
+    TrendingUp,
+    Zap,
+} from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 export default function Home() {
@@ -23,6 +33,7 @@ export default function Home() {
   const [caption, setCaption] = useState("");
   const [platform, setPlatform] = useState<Platform>("tiktok");
   const { state, analyze, reset } = useAnalysis();
+  const { history, saveAnalysis } = useHistory();
 
   const platforms: { value: Platform; label: string; emoji: string }[] = [
     { value: "tiktok", label: "TikTok", emoji: "🎵" },
@@ -33,7 +44,10 @@ export default function Home() {
 
   const handleAnalyze = async () => {
     if (!file && !caption) return;
-    await analyze(file, caption, platform, contentType);
+    const result = await analyze(file, caption, platform, contentType);
+    if (result) {
+      saveAnalysis(result, caption, platform, file?.name || "");
+    }
   };
 
   const handleReset = () => {
@@ -53,7 +67,6 @@ export default function Home() {
           <div className="max-w-3xl mx-auto">
             {/* Hero Section */}
             <div className="text-center mb-14 pt-12">
-              {/* Badge */}
               <div className="inline-flex items-center gap-2 px-4 py-2 glass-card text-sm text-gray-400 mb-6">
                 <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
                 <span>AI-Powered Content Analysis</span>
@@ -90,6 +103,29 @@ export default function Home() {
                 ))}
               </div>
             </div>
+
+            {/* History Link */}
+            {history.length > 0 && (
+              <Link
+                href="/history"
+                className="flex items-center justify-between p-4 glass-card mb-6 group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-500/20 rounded-lg">
+                    <Clock className="w-4 h-4 text-purple-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">
+                      View Past Analyses
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {history.length} previous {history.length === 1 ? "analysis" : "analyses"}
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-purple-400 transition" />
+              </Link>
+            )}
 
             {/* Platform Selector */}
             <div className="mb-6">
@@ -150,7 +186,7 @@ export default function Home() {
             <button
               onClick={handleAnalyze}
               disabled={!file && !caption}
-              className={`w-full mt-8 py-4.5 rounded-xl text-lg font-bold flex items-center justify-center gap-3 transition-all duration-500 ${
+              className={`w-full mt-8 py-5 rounded-xl text-lg font-bold flex items-center justify-center gap-3 transition-all duration-500 ${
                 file || caption
                   ? "btn-primary text-white cursor-pointer"
                   : "bg-white/5 text-gray-600 cursor-not-allowed border border-white/5"
@@ -161,7 +197,6 @@ export default function Home() {
               {(file || caption) && <ArrowRight className="w-5 h-5" />}
             </button>
 
-            {/* Trust text */}
             <p className="text-center text-xs text-gray-600 mt-4">
               🔒 Your content is analyzed securely and never stored
             </p>
@@ -181,7 +216,9 @@ export default function Home() {
           <div className="max-w-md mx-auto text-center py-24">
             <div className="glass-card p-10">
               <p className="text-4xl mb-4">😵</p>
-              <p className="text-red-400 text-lg font-semibold mb-2">Analysis Failed</p>
+              <p className="text-red-400 text-lg font-semibold mb-2">
+                Analysis Failed
+              </p>
               <p className="text-gray-500 text-sm mb-6">{state.error}</p>
               <button
                 onClick={handleReset}
@@ -196,7 +233,6 @@ export default function Home() {
         {/* ============ RESULTS STATE ============ */}
         {state.status === "complete" && state.result && (
           <div>
-            {/* Score Header */}
             <div className="text-center mb-14 pt-4">
               <p className="text-sm text-gray-500 mb-2 uppercase tracking-widest font-medium">
                 Analysis Complete
@@ -207,7 +243,6 @@ export default function Home() {
               <ViralityScore score={state.result.overallScore} />
             </div>
 
-            {/* Results Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-6">
                 <ScoreBreakdown breakdown={state.result.breakdown} />
@@ -215,17 +250,30 @@ export default function Home() {
               </div>
               <div className="space-y-6">
                 <CaptionOptimizer analysis={state.result.captionAnalysis} />
-                <Recommendations recommendations={state.result.recommendations} />
+                <Recommendations
+                  recommendations={state.result.recommendations}
+                />
               </div>
             </div>
 
-            {/* Full Width Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
               <TrendingRecommendations data={state.result.trendingData} />
               <CompetitorComparison
                 comparison={state.result.competitorComparison}
                 userScore={state.result.overallScore}
               />
+            </div>
+
+            {/* Analyze Again Button */}
+            <div className="text-center mt-12">
+              <button
+                onClick={handleReset}
+                className="px-8 py-4 btn-primary text-white rounded-xl font-bold text-lg inline-flex items-center gap-3"
+              >
+                <Sparkles className="w-5 h-5" />
+                Analyze Another
+                <ArrowRight className="w-5 h-5" />
+              </button>
             </div>
           </div>
         )}
